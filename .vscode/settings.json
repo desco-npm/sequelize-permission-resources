@@ -1,0 +1,26 @@
+{
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.renderWhitespace": "all",
+  "editor.dragAndDrop": false,
+  "editor.minimap.enabled": true,
+  "editor.rulers": [
+    100
+  ],
+  "eslint.alwaysShowStatus": true,
+  "eslint.debug": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.fontSize": 14,
+  "workbench.tree.indent": 15,
+  "gitflow4code.features": [
+    {
+      "name": "feature/pre",
+      "base": "develop"
+    }
+  ],
+}
