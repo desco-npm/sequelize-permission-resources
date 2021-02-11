@@ -286,8 +286,10 @@ module.exports = params => {
       res.json({ url: await User.googleLogin(req), })
     })
 
-    express.get(googleCallbackbURL, async (req, res) => {
-      res.json(await User.googleCallback(req))
+    express.use(googleCallbackbURL, async (req, res, next) => {
+      res.locals = await User.googleCallback(req)
+
+      next()
     })
   }
 }
