@@ -1,6 +1,6 @@
 {
   "name": "@desco/sequelize-permission-resources",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "System, implemented in Sequelize, allowing users and groups of users to access resources",
   "main": "index.js",
   "scripts": {
