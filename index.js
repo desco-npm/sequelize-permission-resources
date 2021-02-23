@@ -46,12 +46,12 @@ module.exports = params => {
   Group.hasMany(Permission)
   Permission.belongsTo(Group)
 
-  User.login = async (mail, password) => {
+  User.login = async (login, password) => {
     if (!password) return null
 
     const operationParams = {
       where: {
-        [loginProp]: mail,
+        [loginProp]: login,
         [pswProp]: password,
       },
     }
@@ -182,9 +182,14 @@ module.exports = params => {
   Permission.check = async (userId, resource) => {
     if (userId === null) return true
 
-    const permissions = await Permission.list(userId)
+    resource = resource.toLowerCase()
 
-    return permissions[resource] === true
+    const urlPattern = require('url-pattern')
+
+    return Object.keys(await Permission.list(userId))
+      .map(i => new urlPattern(i))
+      .filter(p => p.match(resource) !== null)
+      .length > 0
   }
 
   Permission.list = async (userId = null) => {
@@ -263,7 +268,6 @@ module.exports = params => {
 
   express.use(async  (req, res, next) => {
     const resource = treatResource(req.url)
-
     if (await Permission.isAllowed(resource)) {
       next()
 
