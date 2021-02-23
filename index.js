@@ -182,14 +182,20 @@ module.exports = params => {
   Permission.check = async (userId, resource, req) => {
     if (userId === null) return true
 
-    resource = treatResource(`${req.method}:${resource}`)
+    resource = treatResource(resource).split('|')[1]
 
     const urlPattern = require('url-pattern')
 
-    console.log(await Permission.list(userId))
     return Object.keys(await Permission.list(userId))
-      .map(i => new urlPattern(i))
-      .filter(p => p.match(resource) !== null)
+      .filter(i => {
+        let [ method, url, ] = i.split('|')
+
+        url = new urlPattern(url)
+
+        console.log(i, url.match(resource) !== null , [ 'ALL', req.method, ].indexOf(method) !== -1)
+
+        return url.match(resource) !== null && [ 'ALL', req.method, ].indexOf(method) !== -1
+      })
       .length > 0
   }
 
