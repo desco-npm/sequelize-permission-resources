@@ -1,10 +1,12 @@
 const moment = require('moment')
+const objectMap = require('object.map')
 const jsonwebtoken = require('jsonwebtoken')
 
 // login/permissão google
 module.exports = params => {
   const {
     express,
+    op,
     User,
     Group,
     Permission,
@@ -186,91 +188,85 @@ module.exports = params => {
 
     const urlPattern = require('url-pattern')
 
-    return Object.keys(await Permission.list(userId))
+    const permissions = await Permission.list(userId)
+    const route = Object.keys(permissions)
       .filter(i => {
         let [ method, url, ] = i.split('|')
 
         url = new urlPattern(url)
 
-        console.log(i, url.match(resource) !== null , [ 'ALL', req.method, ].indexOf(method) !== -1)
-
         return url.match(resource) !== null && [ 'ALL', req.method, ].indexOf(method) !== -1
-      })
-      .length > 0
+      })[0]
+
+    return permissions[route]
   }
 
   Permission.list = async (userId = null) => {
-    const params = {
-      where: { [userPkProp]: userId, },
-      include: [
-        {
-          model: Group,
-          include: Permission,
-        },
-        Permission,
-      ],
-    }
+    const permissions = { allow: {}, user: {}, group: {}, }
+    const user = (await User.findOne({
+      where: {
+        [userPkProp]: userId,
+      },
+      include: [ Group, ],
+    }))
+      .toJSON()
+    const groupIds = Object.values(user).reverse()[0].map(i => i[groupPkProp])
 
-    const permissions = { user: {}, group: {}, general: {}, }
-    const userData = ((await User.findOne(params)).toJSON()) || {}
-
-    const setPermission = (type, Permission) => {
-      const resource = treatResource(Permission[resourceProp])
-      const allow = Permission.allow
-
-      const isUndefined = permissions[type][resource] === undefined
-      const isNull = permissions[type][resource] === null
-      const isBottom = permissions[type][resource] === true && allow === false
-
-      if (isUndefined || isNull || isBottom) {
-        permissions[type][resource] = allow
-      }
-    }
-
-    userData.Permissions = userData.Permissions || []
-    userData.UserGroups = userData.UserGroups || []
-
-    userData.Permissions.map(permission => {
-      setPermission('user', permission)
-    })
-
-    userData.UserGroups.map(groupData => {
-      groupData.Permissions = groupData.Permissions = []
-
-      groupData.Permissions.map(permission => {
-        setPermission('group', permission)
-      })
-    })
-
-    permissions.general = clone(permissions.group)
-
-    objectMap(permissions.user, (value, resource) => {
-      if (value === null) return
-
-      permissions.general[resource] = value
-    })
-
-    permissions.all = (await Permission.findAll({
+    const permissionsAllowList = (await Permission.findAll({
       where: {
         [User.name + userPkProp]: null,
-        [User.name + groupPkProp]: null,
+        [Group.name + userPkProp]: null,
       },
-    })) || []
+    }))
 
-    permissions.all.map(Permission => {
-      Permission = Permission.toJSON()
+    const permissionsGroupList = (await Permission.findAll({
+      where: {
+        [Group.name + groupPkProp]: { [op.in]: groupIds, },
+      },
+    }))
 
-      const resource = treatResource(Permission[resourceProp])
-      const isUndefined = permissions.general[resource] === undefined
-      const isNull = permissions.general[resource] === null
-      const currentIsTrue = Permission.allow === true
+    const permissionsUserList = (await Permission.findAll({
+      where: {
+        [User.name + userPkProp]: userId,
+      },
+    }))
 
-      if ((isUndefined || isNull) && currentIsTrue) {
-        permissions.general[resource] = true
-      }
+    permissionsAllowList.map(i => {
+      if (permissions.allow[i[resourceProp]] === false) return
+      if (i.allow === null && permissions.allow[i[resourceProp]] !== null) return
+
+      i = i.toJSON()
+
+      permissions.allow[i[resourceProp]] = i.allow
     })
 
-    return objectMap(permissions.general, v => v === null ? false : v)
+    permissionsGroupList.map(i => {
+      if (permissions.group[i[resourceProp]] === false) return
+      if (i.allow === null && permissions.group[i[resourceProp]] !== null) return
+
+      i = i.toJSON()
+
+      permissions.group[i[resourceProp]] = i.allow
+    })
+
+    permissionsUserList.map(i => {
+      if (permissions.user[i[resourceProp]] === false) return
+      if (i.allow === null && permissions.user[i[resourceProp]] !== null) return
+
+      i = i.toJSON()
+
+      permissions.user[i[resourceProp]] = i.allow
+    })
+
+    const permissionsObj = {}
+
+    objectMap({ ...permissions.allow, ...permissions.group, ...permissions.user,}, (v, k) => {
+      if (v.allow === null && typeof permissionsObj[k] === 'boolean') return
+
+      permissionsObj[treatResource(k)] = v
+    })
+
+    return permissionsObj
   }
 
   express.use(async  (req, res, next) => {
