@@ -134,7 +134,7 @@ module.exports = params => {
       treatResource(googleCallbackbURL),
     ]
 
-    if (nativeAllowed.indexOf(resource) !== -1) return true
+    if (nativeAllowed.indexOf(treatResource(resource)) !== -1) return true
 
     const permissions = await Permission.findAndCountAll({
       where: {
@@ -179,13 +179,14 @@ module.exports = params => {
 
   }
 
-  Permission.check = async (userId, resource) => {
+  Permission.check = async (userId, resource, req) => {
     if (userId === null) return true
 
-    resource = resource.toLowerCase()
+    resource = treatResource(`${req.method}:${resource}`)
 
     const urlPattern = require('url-pattern')
 
+    console.log(await Permission.list(userId))
     return Object.keys(await Permission.list(userId))
       .map(i => new urlPattern(i))
       .filter(p => p.match(resource) !== null)
@@ -204,8 +205,8 @@ module.exports = params => {
       ],
     }
 
-    const userData = await User.findOne(params).then(r => r ? r.toJSON() : {})
     const permissions = { user: {}, group: {}, general: {}, }
+    const userData = ((await User.findOne(params)).toJSON()) || {}
 
     const setPermission = (type, Permission) => {
       const resource = treatResource(Permission[resourceProp])
@@ -268,6 +269,7 @@ module.exports = params => {
 
   express.use(async  (req, res, next) => {
     const resource = treatResource(req.url)
+
     if (await Permission.isAllowed(resource)) {
       next()
 
@@ -277,7 +279,7 @@ module.exports = params => {
     const { userId, tokenError, } = await Permission.checkToken(req, resource)
 
     if (tokenError) res.json(tokenError)
-    else if (!(await Permission.check(userId, resource))) res.json(invalidPermission)
+    else if (!(await Permission.check(userId, resource, req))) res.json(invalidPermission)
     else next()
   })
 
@@ -312,10 +314,14 @@ function newGoogleAPI (req, { googleCallbackbURL, googleId, googleKey, }) {
   })
 }
 
-function treatResource (url) {
-  url = url.split('?')[0]
-  url = url.slice(-1) === '/' ? url.slice(0, -1) : url
-  url = url[0] === '/' ? url.slice(1) : url
+function treatResource (resource) {
+  resource = resource.split('?')[0]
+  resource = resource.slice(-1) === '/' ? resource.slice(0, -1) : resource
+  resource = resource[0] === '/' ? resource.slice(1) : resource
+  resource = resource.split('|')
 
-  return url.toLowerCase()
+  const method = resource.length === 1 ? 'ALL' : resource[0]
+  const url = (resource.length === 1 ? resource[0] : resource[1]).toLowerCase()
+
+  return `${method}|${url}`
 }
