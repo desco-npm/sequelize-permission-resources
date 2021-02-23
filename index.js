@@ -203,14 +203,18 @@ module.exports = params => {
 
   Permission.list = async (userId = null) => {
     const permissions = { allow: {}, user: {}, group: {}, }
-    const user = (await User.findOne({
-      where: {
-        [userPkProp]: userId,
-      },
-      include: [ Group, ],
-    }))
-      .toJSON()
-    const groupIds = Object.values(user).reverse()[0].map(i => i[groupPkProp])
+    const user = userId
+      ? (
+        (await User.findOne({
+          where: {
+            [userPkProp]: userId,
+          },
+          include: [ Group, ],
+        }))
+          .toJSON()
+      )
+      : null
+    const groupIds = user ? Object.values(user).reverse()[0].map(i => i[groupPkProp]) : []
 
     const permissionsAllowList = (await Permission.findAll({
       where: {
@@ -279,10 +283,19 @@ module.exports = params => {
     }
 
     const { userId, tokenError, } = await Permission.checkToken(req, resource)
+    const permissionError = !(await Permission.check(userId, resource, req))
 
-    if (tokenError) res.json(tokenError)
-    else if (!(await Permission.check(userId, resource, req))) res.json(invalidPermission)
-    else next()
+    if (permissionError) {
+      if (tokenError) {
+        res.json(tokenError)
+      }
+      else {
+        res.json(invalidPermission)
+      }
+    }
+    else {
+      next()
+    }
   })
 
   express.post(urlLogin, async (req, res) => {
