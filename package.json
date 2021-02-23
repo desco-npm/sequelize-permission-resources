@@ -1,6 +1,6 @@
 {
   "name": "@desco/sequelize-permission-resources",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "System, implemented in Sequelize, allowing users and groups of users to access resources",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "@desco/social-auth": "^1.0.2",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
+    "object.map": "^1.0.1",
     "url-pattern": "^1.0.3"
   }
 }
