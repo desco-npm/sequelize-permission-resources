@@ -1,11 +1,8 @@
 {
   "name": "@desco/sequelize-permission-resources",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "System, implemented in Sequelize, allowing users and groups of users to access resources",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/descodifica/sequelize-permission-resources.git"
@@ -19,10 +16,7 @@
   ],
   "author": "Rafael A. R. Dias <eu@diasrafael.com.br>",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/descodifica/sequelize-permission-resources/issues"
-  },
-  "homepage": "https://github.com/descodifica/sequelize-permission-resources#readme",
+  "homepage": "https://github.com/descodifica/sequelize-permission-resources",
   "dependencies": {
     "@desco/social-auth": "^1.0.2",
     "jsonwebtoken": "^8.5.1",

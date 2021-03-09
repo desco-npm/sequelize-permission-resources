@@ -23,6 +23,7 @@ module.exports = params => {
     tokenProp = 'token',
     tokenTypeProp = 'tokenType',
     resourceProp = 'resource',
+    allowProp = 'allow',
     userPkProp = 'id',
     groupPkProp = 'id',
     expireTokenProp = 'expireToken',
@@ -119,7 +120,7 @@ module.exports = params => {
       })
 
       if (!created) {
-        userData = await User.change(token, userData.id)
+        userData = await User.change(token, userData[userPkProp])
       }
 
       return { ...token, ...userData, }
@@ -174,7 +175,7 @@ module.exports = params => {
       const userData = await User.findOne({ where: { [userPkProp]: tokenData[userPkProp], }, })
         .then(r => r ? r.toJSON() : {})
 
-      if (userData.token !== token) return { tokenError: invalidToken, }
+      if (userData[tokenProp] !== token) return { tokenError: invalidToken, }
 
       return { userId: tokenData[userPkProp], }
     }
@@ -237,35 +238,41 @@ module.exports = params => {
 
     permissionsAllowList.map(i => {
       if (permissions.allow[i[resourceProp]] === false) return
-      if (i.allow === null && permissions.allow[i[resourceProp]] !== null) return
+      if (i[allowProp] === null && permissions.allow[i[resourceProp]] !== null) return
 
       i = i.toJSON()
 
-      permissions.allow[i[resourceProp]] = i.allow
+      permissions.allow[i[resourceProp]] = i[allowProp]
     })
 
     permissionsGroupList.map(i => {
       if (permissions.group[i[resourceProp]] === false) return
-      if (i.allow === null && permissions.group[i[resourceProp]] !== null) return
+      if (i[allowProp] === null && permissions.group[i[resourceProp]] !== null) return
 
       i = i.toJSON()
 
-      permissions.group[i[resourceProp]] = i.allow
+      permissions.group[i[resourceProp]] = i[allowProp]
     })
 
     permissionsUserList.map(i => {
       if (permissions.user[i[resourceProp]] === false) return
-      if (i.allow === null && permissions.user[i[resourceProp]] !== null) return
+      if (i[allowProp] === null && permissions.user[i[resourceProp]] !== null) return
 
       i = i.toJSON()
 
-      permissions.user[i[resourceProp]] = i.allow
+      permissions.user[i[resourceProp]] = i[allowProp]
     })
 
-    const permissionsObj = {}
+    const permissionsObj = permissions.allow
 
-    objectMap({ ...permissions.allow, ...permissions.group, ...permissions.user,}, (v, k) => {
-      if (v.allow === null && typeof permissionsObj[k] === 'boolean') return
+    objectMap(permissions.group, (v, k) => {
+      if (v[allowProp] === null && typeof permissionsObj[k] === 'boolean') return
+
+      permissionsObj[treatResource(k)] = v
+    })
+
+    objectMap(permissions.user, (v, k) => {
+      if (v[allowProp] === null && typeof permissionsObj[k] === 'boolean') return
 
       permissionsObj[treatResource(k)] = v
     })
@@ -299,7 +306,7 @@ module.exports = params => {
   })
 
   express.post(urlLogin, async (req, res) => {
-    res.json(await User.login(req.body.mail, req.body.password))
+    res.json(await User.login(req.body[loginProp], req.body[pswProp]))
   })
 
   if (google) {
