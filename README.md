@@ -13,7 +13,7 @@
       <br /><br />
       <div align="center">
         <img alt="Licença MIT" src="https://img.shields.io/static/v1?label=Licença&message=MIT&color=green&style=for-the-badge">
-        <img alt="Versão 1.2.4" src="https://img.shields.io/static/v1?label=Versão&message=1.2.4&color=blue&style=for-the-badge">
+        <img alt="Versão 1.2.5" src="https://img.shields.io/static/v1?label=Versão&message=1.2.5&color=blue&style=for-the-badge">
       </div>
       <h4 align="center"> 
         🧪 Em fase Beta 🚀
@@ -30,10 +30,21 @@
 
 ## 📋 Tabela de conteúdos
 
+* [✔️ Recursos](#Recursos)
 * [🛠️ Tecnologias](#Tecnologias)
 * [⚙️ Instalação](#Instalação)
 * [📦 Importação](#Importação)
 * [📚 Como Usar](#Como-Usar)
+
+---
+
+<a name="Recursos"></a>
+
+## ✔️ Recursos
+
+- [x] Login;
+- [x] Login com Google;
+- [x] Controle de permissões;
 
 ---
 
