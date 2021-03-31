@@ -9,7 +9,7 @@
     <td><img src="https://i.ibb.co/PGLkNY4/sequelize-permission-resources.png"></td>
     <td>  
       <h1>@desco/sequelize-permission-resources</h1>
-      Pacote que permite controlar o acesso de usuários e grupos de usuários aos recursos do sistema via [Sequelize](https://sequelize.org/).
+      Pacote que permite controlar o acesso de usuários e grupos de usuários aos recursos do sistema via <a href="https://sequelize.org/" target="_blank">Sequelize.</a>
       <br /><br />
       <div align="center">
         <img alt="Licença MIT" src="https://img.shields.io/static/v1?label=Licen%C3%A7a&message=MIT&color=green&style=for-the-badge">
