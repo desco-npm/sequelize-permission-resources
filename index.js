@@ -38,7 +38,7 @@ module.exports = params => {
     expiredToken = { message: 'Expired Token', },
   } = params
 
-  const throughUserGroup = [ User.name, Group.name, ].sort().join('_')
+  const throughUserGroup = [User.name, Group.name,].sort().join('_')
 
   User.belongsToMany(Group, { through: throughUserGroup, })
   Group.belongsToMany(User, { through: throughUserGroup, })
@@ -74,7 +74,7 @@ module.exports = params => {
 
       userData[tokenProp] = jsonwebtoken.sign(userData, secret, { algorithm, })
 
-      return User.update(userData, { where: { [userPkProp]: userData[userPkProp], },})
+      return User.update(userData, { where: { [userPkProp]: userData[userPkProp], }, })
         .then(() => {
           return loginCallback(userData)
         })
@@ -109,7 +109,7 @@ module.exports = params => {
 
       const info = await GoogleAPI.userInfo()
 
-      let [ userData, created, ] = await User.selectOrCreate({
+      let [userData, created,] = await User.selectOrCreate({
         where: {
           [mailProp]: info.data.email,
         },
@@ -143,7 +143,7 @@ module.exports = params => {
       where: {
         [resourceProp]: resource,
         [User.name + userPkProp]: null,
-        [User.name + groupPkProp]: null,
+        [Group.name + groupPkProp]: null,
       },
     })
 
@@ -153,13 +153,13 @@ module.exports = params => {
   Permission.checkToken = async (req, resource) => {
     const { token, tokentype: tokenType, } = req.headers
 
-    if ([ urlLogin, urlLogin + '/',].indexOf(resource) !== -1) return { userId: null, }
+    if ([urlLogin, urlLogin + '/',].indexOf(resource) !== -1) return { userId: null, }
     if (!token) return { tokenError: noToken, }
 
     if (tokenType === 'google') {
       const { Google, } = require('@desco/social-auth')
 
-      if(!(await Google.checkToken(token))) return { tokenError: invalidToken, }
+      if (!(await Google.checkToken(token))) return { tokenError: invalidToken, }
 
       const userData = (await User.findOne({ where: { [tokenProp]: token, }, })).toJSON()
 
@@ -192,11 +192,11 @@ module.exports = params => {
     const permissions = await Permission.list(userId)
     const route = Object.keys(permissions)
       .filter(i => {
-        let [ method, url, ] = i.split('|')
+        let [method, url,] = i.split('|')
 
         url = new urlPattern(url)
 
-        return url.match(resource) !== null && [ 'ALL', req.method, ].indexOf(method) !== -1
+        return url.match(resource) !== null && ['ALL', req.method,].indexOf(method) !== -1
       })[0]
 
     return permissions[route]
@@ -210,7 +210,7 @@ module.exports = params => {
           where: {
             [userPkProp]: userId,
           },
-          include: [ Group, ],
+          include: [Group,],
         }))
           .toJSON()
       )
@@ -280,7 +280,7 @@ module.exports = params => {
     return permissionsObj
   }
 
-  express.use(async  (req, res, next) => {
+  express.use(async (req, res, next) => {
     const resource = treatResource(req.url)
 
     if (await Permission.isAllowed(resource)) {
@@ -322,7 +322,7 @@ module.exports = params => {
   }
 }
 
-function newGoogleAPI (req, { googleCallbackbURL, googleId, googleKey, }) {
+function newGoogleAPI(req, { googleCallbackbURL, googleId, googleKey, }) {
   const { Google, } = require('@desco/social-auth')
 
   const protocol = `${req.protocol}://`
@@ -336,7 +336,7 @@ function newGoogleAPI (req, { googleCallbackbURL, googleId, googleKey, }) {
   })
 }
 
-function treatResource (resource) {
+function treatResource(resource) {
   resource = resource.split('?')[0]
   resource = resource.slice(-1) === '/' ? resource.slice(0, -1) : resource
   resource = resource[0] === '/' ? resource.slice(1) : resource
