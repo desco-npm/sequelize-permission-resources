@@ -192,7 +192,11 @@ module.exports = params => {
     const permissions = await Permission.list(userId)
     const route = Object.keys(permissions)
       .filter(i => {
-        let [method, url,] = i.split('|')
+        i = i.split('|')
+
+        const containMethod = i.length === 2
+        let method = containMethod ? i[0] : 'ALL'
+        let url = containMethod ? i[1] : i[0]
 
         url = new urlPattern(url)
 
