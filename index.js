@@ -80,8 +80,6 @@ module.exports = params => {
         secret, { algorithm,
       })
 
-      console.log(userData[tokenProp], userData[tokenProp].length)
-
       return User.update(userData, { where: { [userPkProp]: userData[userPkProp], }, })
         .then(() => {
           return loginCallback(userData)
