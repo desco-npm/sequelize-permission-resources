@@ -72,7 +72,15 @@ module.exports = params => {
         [expireTokenProp]: expireToken(),
       }
 
-      userData[tokenProp] = jsonwebtoken.sign(userData, secret, { algorithm, })
+      userData[tokenProp] = jsonwebtoken.sign(
+        {
+          [this.userPkProp]: userData[this.userPkProp],
+          'date': new Date(),
+        },
+        secret, { algorithm,
+      })
+
+      console.log(userData[tokenProp], userData[tokenProp].length)
 
       return User.update(userData, { where: { [userPkProp]: userData[userPkProp], }, })
         .then(() => {
